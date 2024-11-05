@@ -1,0 +1,28 @@
+name: Cache Server Interaction
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-and-test-cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Kubernetes CLI
+        uses: azure/setup-kubectl@v2
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Port-forward cache server to local machine
+        run: |
+          kubectl port-forward svc/cache-server 3000:3000 &
+          sleep 5  # Give port-forward some time to establish connection
+
+      - name: Tear down port forwarding
+        run: |
+          pkill kubectl
